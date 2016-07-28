@@ -170,6 +170,7 @@ of:
  <li id=process-request-end-of-file><dfn>process request end-of-body</dfn>
  <li><dfn>process response</dfn>
  <li id=process-response-end-of-file><dfn>process response end-of-body</dfn>
+ <li><dfn>process response done</dfn>
 </ul>
 
 <p>To <dfn>queue a fetch task</dfn> on <span title=concept-request>request</span>
@@ -1135,6 +1136,10 @@ it is `<code title>OK</code>`.
 <p>A <span title=concept-response>response</span> has an associated
 <dfn title=concept-response-body>body</dfn> (null or a
 <span title=concept-body>body</span>). Unless stated otherwise it is null.
+
+<p>A <span title=concept-response>response</span> has an associated
+<dfn title=concept-response-trailer>trailer</dfn> (a
+<span title=concept-header-list>header list</span>). Unless stated otherwise it is empty.
 
 <p>A <span title=concept-response>response</span> has an associated
 <dfn title=concept-response-https-state>HTTPS state</dfn> (an
@@ -2110,8 +2115,8 @@ response <span title=concept-header>header</span> can be used to require checkin
 
  <p>That is, it either returns a <span title=concept-response>response</span> if
  <span title=concept-request>request</span>'s <span>synchronous flag</span> is set, or it
- <span title="queue a fetch task">queues tasks</span> annotated
- <span>process response</span>, and <span>process response end-of-body</span> for the
+ <span title="queue a fetch task">queues tasks</span> annotated <span>process response</span>,
+ <span>process response end-of-body</span>, and <span>process response done</span> for the
  <span title=concept-response>response</span>.
 
  <p>To capture uploads, if <span title=concept-request>request</span>'s
@@ -3383,6 +3388,10 @@ The <i title>credentials flag</i> is one too.
   <var>reason</var>.
   <span data-anolis-ref>HTTP</span>
 
+  <p class="note">The exact layering between Fetch and HTTP still needs to be sorted through and
+  therefore <var>response</var> represents both a <span title=concept-response>response</span> and
+  an HTTP response here.
+
   <p>If the HTTP request results in a TLS client certificate dialog, run these substeps:
 
   <ol>
@@ -3431,6 +3440,11 @@ The <i title>credentials flag</i> is one too.
  <li><p>Set <var>response</var>'s <span title=concept-response-body>body</span> to a new
  <span title=concept-body>body</span> whose <span title=concept-body-stream>stream</span> is
  <var>stream</var>.
+
+ <li><p>If <var>response</var> has a payload body length, then set <var>response</var>'s
+ <span title=concept-response-body>body</span>'s
+ <span title=concept-body-total-bytes>total bytes</span> to that payload body length.
+ <!-- XXX xref payload body -->
 
  <li>
   <p><span title=concept-header-list-delete>Delete</span>
@@ -3491,15 +3505,9 @@ The <i title>credentials flag</i> is one too.
   <p>Run these substeps <span data-anolis-spec=html>in parallel</span>:
 
   <ol>
-   <li><p>If <var>response</var>'s <span title=concept-response-body>body</span> is
-   non-null, set <var>response</var>'s <span title=concept-response-body>body</span>'s
-   <span title=concept-body-total-bytes>total bytes</span> to <var>response</var>'s
-   <span title=concept-response-body>body</span>'s payload body length.
-   <!-- XXX xref payload body -->
-
    <li>
-    <p>Whenever one or more bytes are transmitted, let <var>bytes</var> be the
-    transmitted bytes and run these subsubsteps:
+    <p>Whenever one or more bytes are transmitted from <var>response</var>'s payload body, let
+    <var>bytes</var> be the transmitted bytes and run these subsubsteps:
 
     <ol>
      <li><p>Increase <var>response</var>'s
@@ -3532,9 +3540,9 @@ The <i title>credentials flag</i> is one too.
      to <span title=concept-fetch-suspend>suspend</span> the ongoing fetch.
     </ol>
 
-   <li><p>If at any point the bytes transmission is done normally and <var>stream</var> is
-   <span title=concept-ReadableStream-readable>readable</span>,
-   <span title=concept-close-ReadableStream>close</span> <var>stream</var>.
+   <li><p>If at any point the bytes transmission for <var>response</var>'s payload body is done
+   normally and <var>stream</var> is <span title=concept-ReadableStream-readable>readable</span>,
+   then <span title=concept-close-ReadableStream>close</span> <var>stream</var>.
 
    <li>
     <p>If at any point <span title=concept-fetch>fetch</span> is
@@ -3549,6 +3557,11 @@ The <i title>credentials flag</i> is one too.
      <span title=concept-error-ReadableStream>error</span> <var>stream</var> with a
      <code>TypeError</code>.
     </ol>
+
+   <li><p>When <var>response</var> is transmitted, including trailer (see
+   <a href="https://tools.ietf.org/html/rfc7230#section-4.1.2">section 4.1.2</a> of
+   <span data-anolis-ref>HTTP</span>), if any, then <span>queue a fetch task</span> on
+   <var>request</var> to <span>process response done</span> for <var>response</var>.
   </ol>
 
   <p class="note no-backref">These are run <span data-anolis-spec=html>in parallel</span>
@@ -4879,6 +4892,7 @@ interface <dfn>Response</dfn> {
   readonly attribute ByteString <span title=dom-Response-statusText>statusText</span>;
   [SameObject] readonly attribute <span>Headers</span> <span title=dom-Response-headers>headers</span>;
   readonly attribute <span title=concept-ReadableStream>ReadableStream</span>? <span title=dom-Response-body>body</span>;
+  [SameObject] readonly attribute Promise&lt;<span>Headers</span>> <span title=dom-Response-trailer>trailer</span>;
 
   [NewObject] <span>Response</span> <span title=dom-Response-clone>clone</span>();
 };
@@ -4899,6 +4913,9 @@ enum <dfn>ResponseType</dfn> { "basic", "cors", "default", "error", "opaque", "o
 <p>A <code>Response</code> object also has an associated <code>Headers</code> object which
 is itself associated with <span title=concept-Response-response>response</span>'s
 <span title=concept-response-header-list>header list</span>.
+
+<p>A <code>Response</code> object also has an associated promise. <span class=note>Used for the
+<code title=dom-Response-trailer>trailer</code> attribute.</span>
 
 <p>A <code>Response</code> object's <span title=concept-Body-body>body</span> is its
 <span title=concept-Response-response>response</span>'s <span title=concept-response-body>body</span>.
@@ -4979,6 +4996,9 @@ constructor, when invoked, must run these steps:
  <span title=concept-response-https-state>HTTPS state</span> to
  <span data-anolis-spec=html>entry settings object</span>'s
  <span data-anolis-spec=html>HTTPS state</span>.
+
+ <li><p>Resolve <var>r</var>'s associated promise with a new <code>Headers</code> object whose
+ <span title=concept-Headers-guard>guard</span> is "<code>immutable</code>".
 
  <li><p>Return <var>r</var>.
 </ol>
@@ -5062,6 +5082,9 @@ return the associated <code>Headers</code> object.
 the associated <span title=concept-Body-body>body</span> is null and the associated
 <span title=concept-Body-body>body</span>'s <span title=concept-body-stream>stream</span> otherwise.
 
+<p>The <dfn title=dom-Response-trailer><code>trailer</code></dfn> attribute's getter must return the
+associated promise.
+
 <hr>
 
 <p>The <dfn title=dom-Response-clone><code>clone()</code></dfn> method, when invoked, must
@@ -5107,6 +5130,10 @@ method, must run these steps:
  <var>init</var> as arguments. If this throws an exception, reject
  <var>p</var> with it and return <var>p</var>.
 
+ <li><p>Let <var>responseObject</var> be a new <code>Response</code> object and a new
+ <code>Headers</code> object whose <span title=concept-Headers-guard>guard</span> is
+ "<code>immutable</code>".
+
  <li>
   <p>Run the following <span data-anolis-spec=html>in parallel</span>:
 
@@ -5119,9 +5146,21 @@ method, must run these steps:
    "<code title>error</code>", reject <var>p</var> with a <code title>TypeError</code> and terminate
    these substeps.
 
-   <li><p>Resolve <var>p</var> with a new <code>Response</code> object associated with
-   <var>response</var> and a new <code>Headers</code> object whose
-   <span title=concept-Headers-guard>guard</span> is "<code title>immutable</code>".
+   <li><p>Associate <var>responseObject</var> with <var>response</var>.
+
+   <li><p>Resolve <var>p</var> with <var>responseObject</var>.
+  </ol>
+
+  <p>To <span>process response done</span> for <var>response</var>, run these substeps:
+
+  <ol>
+   <li><p>Let <var>trailerObject</var> be a new <code>Headers</code> object whose
+   <span title=concept-Headers-guard>guard</span> is "<code>immutable</code>".
+
+   <li><p>Associate <var>trailerObject</var> with <var>response</var>'s
+   <span title=concept-response-trailer>trailer</span>.
+
+   <li><p>Resolve <var>responseObject</var>'s associated promise with <var>trailerObject</var>.
   </ol>
 
  <li><p>Return <var>p</var>.
