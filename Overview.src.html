@@ -4923,8 +4923,9 @@ enum <dfn>ResponseType</dfn> { "basic", "cors", "default", "error", "opaque", "o
 is itself associated with <span title=concept-Response-response>response</span>'s
 <span title=concept-response-header-list>header list</span>.
 
-<p>A <code>Response</code> object also has an associated promise. <span class=note>Used for the
-<code title=dom-Response-trailer>trailer</code> attribute.</span>
+<p>A <code>Response</code> object also has an associated
+<dfn title=concept-Response-trailer-promise>trailer promise</dfn> (a promise). <span class=note>Used
+for the <code title=dom-Response-trailer>trailer</code> attribute.</span>
 
 <p>A <code>Response</code> object's <span title=concept-Body-body>body</span> is its
 <span title=concept-Response-response>response</span>'s <span title=concept-response-body>body</span>.
@@ -5006,8 +5007,9 @@ constructor, when invoked, must run these steps:
  <span data-anolis-spec=html>entry settings object</span>'s
  <span data-anolis-spec=html>HTTPS state</span>.
 
- <li><p>Resolve <var>r</var>'s associated promise with a new <code>Headers</code> object whose
- <span title=concept-Headers-guard>guard</span> is "<code>immutable</code>".
+ <li><p>Resolve <var>r</var>'s <span title=concept-Response-trailer-promise>trailer promise</span>
+ with a new <code>Headers</code> object whose <span title=concept-Headers-guard>guard</span> is
+ "<code>immutable</code>".
 
  <li><p>Return <var>r</var>.
 </ol>
@@ -5092,7 +5094,7 @@ the associated <span title=concept-Body-body>body</span> is null and the associa
 <span title=concept-Body-body>body</span>'s <span title=concept-body-stream>stream</span> otherwise.
 
 <p>The <dfn title=dom-Response-trailer><code>trailer</code></dfn> attribute's getter must return the
-associated promise.
+associated <span title=concept-Response-trailer-promise>trailer promise</span>.
 
 <hr>
 
@@ -5169,7 +5171,9 @@ method, must run these steps:
    <li><p>Associate <var>trailerObject</var> with <var>response</var>'s
    <span title=concept-response-trailer>trailer</span>.
 
-   <li><p>Resolve <var>responseObject</var>'s associated promise with <var>trailerObject</var>.
+   <li><p>Resolve <var>responseObject</var>'s
+   <span title=concept-Response-trailer-promise>trailer promise</span> with
+   <var>trailerObject</var>.
   </ol>
 
  <li><p>Return <var>p</var>.

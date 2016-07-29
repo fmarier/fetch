@@ -4995,8 +4995,9 @@ enum <dfn id="responsetype">ResponseType</dfn> { "basic", "cors", "default", "er
 is itself associated with <a href="#concept-response-response" title="concept-Response-response">response</a>'s
 <a href="#concept-response-header-list" title="concept-response-header-list">header list</a>.
 
-<p>A <a href="#response"><code>Response</code></a> object also has an associated promise. <span class="note">Used for the
-<a href="#dom-response-trailer"><code title="dom-Response-trailer">trailer</code></a> attribute.</span>
+<p>A <a href="#response"><code>Response</code></a> object also has an associated
+<dfn id="concept-response-trailer-promise" title="concept-Response-trailer-promise">trailer promise</dfn> (a promise). <span class="note">Used
+for the <a href="#dom-response-trailer"><code title="dom-Response-trailer">trailer</code></a> attribute.</span>
 
 <p>A <a href="#response"><code>Response</code></a> object's <a href="#concept-body-body" title="concept-Body-body">body</a> is its
 <a href="#concept-response-response" title="concept-Response-response">response</a>'s <a href="#concept-response-body" title="concept-response-body">body</a>.
@@ -5078,8 +5079,9 @@ constructor, when invoked, must run these steps:
  <a class="external" data-anolis-spec="html" href="https://html.spec.whatwg.org/multipage/webappapis.html#entry-settings-object">entry settings object</a>'s
  <a class="external" data-anolis-spec="html" href="https://html.spec.whatwg.org/multipage/webappapis.html#https-state">HTTPS state</a>.
 
- <li><p>Resolve <var>r</var>'s associated promise with a new <a href="#headers"><code>Headers</code></a> object whose
- <a href="#concept-headers-guard" title="concept-Headers-guard">guard</a> is "<code>immutable</code>".
+ <li><p>Resolve <var>r</var>'s <a href="#concept-response-trailer-promise" title="concept-Response-trailer-promise">trailer promise</a>
+ with a new <a href="#headers"><code>Headers</code></a> object whose <a href="#concept-headers-guard" title="concept-Headers-guard">guard</a> is
+ "<code>immutable</code>".
 
  <li><p>Return <var>r</var>.
 </ol>
@@ -5164,7 +5166,7 @@ the associated <a href="#concept-body-body" title="concept-Body-body">body</a> i
 <a href="#concept-body-body" title="concept-Body-body">body</a>'s <a href="#concept-body-stream" title="concept-body-stream">stream</a> otherwise.
 
 <p>The <dfn id="dom-response-trailer" title="dom-Response-trailer"><code>trailer</code></dfn> attribute's getter must return the
-associated promise.
+associated <a href="#concept-response-trailer-promise" title="concept-Response-trailer-promise">trailer promise</a>.
 
 <hr>
 
@@ -5241,7 +5243,9 @@ method, must run these steps:
    <li><p>Associate <var>trailerObject</var> with <var>response</var>'s
    <a href="#concept-response-trailer" title="concept-response-trailer">trailer</a>.
 
-   <li><p>Resolve <var>responseObject</var>'s associated promise with <var>trailerObject</var>.
+   <li><p>Resolve <var>responseObject</var>'s
+   <a href="#concept-response-trailer-promise" title="concept-Response-trailer-promise">trailer promise</a> with
+   <var>trailerObject</var>.
   </ol>
 
  <li><p>Return <var>p</var>.
