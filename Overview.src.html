@@ -191,6 +191,10 @@ of:
 <span>queue a fetch task</span> on <var>request</var> to <span>process request end-of-body</span>
 for <var>request</var>.
 
+<p>To <dfn>queue a fetch-response-done task</dfn>, given a <var>request</var> and
+<var>response</var>, <span>queue a fetch task</span> on <var>request</var> to
+<span>process response done</span> for <var>response</var>.
+
 <hr>
 
 <p>To <dfn>read a <var>request</var></dfn>, if <var>request</var>'s
@@ -3506,8 +3510,9 @@ The <i title>credentials flag</i> is one too.
 
   <ol>
    <li>
-    <p>Whenever one or more bytes are transmitted from <var>response</var>'s payload body, let
+    <p>Whenever one or more bytes are transmitted from <var>response</var>'s message body, let
     <var>bytes</var> be the transmitted bytes and run these subsubsteps:
+    <!-- XXX xref message body -->
 
     <ol>
      <li><p>Increase <var>response</var>'s
@@ -3540,9 +3545,10 @@ The <i title>credentials flag</i> is one too.
      to <span title=concept-fetch-suspend>suspend</span> the ongoing fetch.
     </ol>
 
-   <li><p>If at any point the bytes transmission for <var>response</var>'s payload body is done
+   <li><p>If at any point the bytes transmission for <var>response</var>'s message body is done
    normally and <var>stream</var> is <span title=concept-ReadableStream-readable>readable</span>,
    then <span title=concept-close-ReadableStream>close</span> <var>stream</var>.
+   <!-- XXX xref message body -->
 
    <li>
     <p>If at any point <span title=concept-fetch>fetch</span> is
@@ -3556,12 +3562,15 @@ The <i title>credentials flag</i> is one too.
      <li><p>If <var>stream</var> is <span title=concept-ReadableStream-readable>readable</span>,
      <span title=concept-error-ReadableStream>error</span> <var>stream</var> with a
      <code>TypeError</code>.
+
+     <li><p><span>Queue a fetch-response-done task</span> for <var>request</var> and
+     <var>response</var>.
     </ol>
 
    <li><p>When <var>response</var> is transmitted, including trailer (see
    <a href="https://tools.ietf.org/html/rfc7230#section-4.1.2">section 4.1.2</a> of
-   <span data-anolis-ref>HTTP</span>), if any, then <span>queue a fetch task</span> on
-   <var>request</var> to <span>process response done</span> for <var>response</var>.
+   <span data-anolis-ref>HTTP</span>), if any, then <span>queue a fetch-response-done task</span>
+   for <var>request</var> and <var>response</var>.
   </ol>
 
   <p class="note no-backref">These are run <span data-anolis-spec=html>in parallel</span>

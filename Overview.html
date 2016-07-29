@@ -7,7 +7,7 @@
 
 <p><a class="logo" href="https://whatwg.org/"><img alt="WHATWG" height="100" src="https://resources.whatwg.org/logo-fetch.svg" width="100"></a>
 <h1 id="cors">Fetch</h1>
-<h2 class="no-num no-toc" id="living-standard-—-last-updated-28-july-2016">Living Standard — Last Updated 28 July 2016</h2>
+<h2 class="no-num no-toc" id="living-standard-—-last-updated-29-july-2016">Living Standard — Last Updated 29 July 2016</h2>
 
 <dl>
  <dt>Participate:
@@ -262,6 +262,10 @@ of:
 <p>To <dfn id="queue-a-fetch-request-done-task">queue a fetch-request-done task</dfn>, given a <var>request</var>,
 <a href="#queue-a-fetch-task">queue a fetch task</a> on <var>request</var> to <a href="#process-request-end-of-body">process request end-of-body</a>
 for <var>request</var>.
+
+<p>To <dfn id="queue-a-fetch-response-done-task">queue a fetch-response-done task</dfn>, given a <var>request</var> and
+<var>response</var>, <a href="#queue-a-fetch-task">queue a fetch task</a> on <var>request</var> to
+<a href="#process-response-done">process response done</a> for <var>response</var>.
 
 <hr>
 
@@ -3578,8 +3582,9 @@ The <i title="">credentials flag</i> is one too.
 
   <ol>
    <li>
-    <p>Whenever one or more bytes are transmitted from <var>response</var>'s payload body, let
+    <p>Whenever one or more bytes are transmitted from <var>response</var>'s message body, let
     <var>bytes</var> be the transmitted bytes and run these subsubsteps:
+    <!-- XXX xref message body -->
 
     <ol>
      <li><p>Increase <var>response</var>'s
@@ -3612,9 +3617,10 @@ The <i title="">credentials flag</i> is one too.
      to <a href="#concept-fetch-suspend" title="concept-fetch-suspend">suspend</a> the ongoing fetch.
     </ol>
 
-   <li><p>If at any point the bytes transmission for <var>response</var>'s payload body is done
+   <li><p>If at any point the bytes transmission for <var>response</var>'s message body is done
    normally and <var>stream</var> is <a href="#concept-readablestream-readable" title="concept-ReadableStream-readable">readable</a>,
    then <a href="#concept-close-readablestream" title="concept-close-ReadableStream">close</a> <var>stream</var>.
+   <!-- XXX xref message body -->
 
    <li>
     <p>If at any point <a href="#concept-fetch" title="concept-fetch">fetch</a> is
@@ -3628,12 +3634,15 @@ The <i title="">credentials flag</i> is one too.
      <li><p>If <var>stream</var> is <a href="#concept-readablestream-readable" title="concept-ReadableStream-readable">readable</a>,
      <a href="#concept-error-readablestream" title="concept-error-ReadableStream">error</a> <var>stream</var> with a
      <code>TypeError</code>.
+
+     <li><p><a href="#queue-a-fetch-response-done-task">Queue a fetch-response-done task</a> for <var>request</var> and
+     <var>response</var>.
     </ol>
 
    <li><p>When <var>response</var> is transmitted, including trailer (see
    <a href="https://tools.ietf.org/html/rfc7230#section-4.1.2">section 4.1.2</a> of
-   <a href="#refsHTTP">[HTTP]</a>), if any, then <a href="#queue-a-fetch-task">queue a fetch task</a> on
-   <var>request</var> to <a href="#process-response-done">process response done</a> for <var>response</var>.
+   <a href="#refsHTTP">[HTTP]</a>), if any, then <a href="#queue-a-fetch-response-done-task">queue a fetch-response-done task</a>
+   for <var>request</var> and <var>response</var>.
   </ol>
 
   <p class="note no-backref">These are run <a class="external" data-anolis-spec="html" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel">in parallel</a>
